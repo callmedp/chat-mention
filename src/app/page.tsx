@@ -1,95 +1,53 @@
-import Image from 'next/image'
+"use client"
+
 import styles from './page.module.css'
+import { useState } from 'react';
+import mentions from "@/data.json";
+import { AutoComplete } from 'antd'
 
 export default function Home() {
+
+  const [text, setText] = useState<string>('');
+  const [matchingMentionList, setMatchingMentionList] = useState<{ value: string }[]>([])
+
+  const handleInputChange = (value: string) => {
+
+    const inputText = value;
+    setText(inputText);
+    const lastWord = inputText.split(' ').pop();
+
+    if (lastWord && lastWord.startsWith('@')) {
+
+      const query = lastWord.substring(1);
+      const matchingMentions = mentions.filter((mention) =>
+        mention.first_name.toLowerCase().includes(query.toLowerCase())
+      );
+      const mappedMentions = matchingMentions.map(mention => ({
+        value: mention.first_name,
+      }))
+      setMatchingMentionList(mappedMentions || [])
+    }
+  };
+
+  const handleSelect = (value: string) => {
+
+    setMatchingMentionList([])
+    setText(state => {
+      let text = state.split("@")
+      return text[0]+"@"+value;
+    })
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <div className={styles.container}>
+      <AutoComplete
+        style={{ width: 200 }}
+        onSearch={handleInputChange}
+        placeholder="use @ for mention"
+        options={matchingMentionList.slice(0, 5)}
+        onSelect={handleSelect}
+        value={text}
+      />
+    </div>
   )
 }
